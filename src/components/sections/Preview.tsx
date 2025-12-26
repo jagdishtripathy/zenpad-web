@@ -5,68 +5,238 @@ import {
     Scissors, Copy, Clipboard, Search, X, Minus, Square
 } from "lucide-react";
 
+type Snippet = {
+    lang: string;
+    file: string;
+    cmd: string;
+    code: string[];
+    color: string; // Tab accent color
+};
+
+const snippets: Snippet[] = [
+    {
+        lang: "Python",
+        file: "script.py",
+        cmd: "zenpad script.py",
+        code: [
+            "import sys",
+            "",
+            "def main():",
+            "    print('Zenpad is fast')",
+            "    return 0"
+        ],
+        color: "bg-blue-500"
+    },
+    {
+        lang: "Go",
+        file: "main.go",
+        cmd: "zenpad main.go",
+        code: [
+            "package main",
+            "import \"fmt\"",
+            "",
+            "func main() {",
+            "    fmt.Println(\"Simplicity\")",
+            "}"
+        ],
+        color: "bg-cyan-500"
+    },
+    {
+        lang: "Rust",
+        file: "main.rs",
+        cmd: "zenpad main.rs",
+        code: [
+            "fn main() {",
+            "    println!(\"Memory Safe\");",
+            "    let x = \"Blazingly Fast\";",
+            "}"
+        ],
+        color: "bg-orange-500"
+    },
+    {
+        lang: "C",
+        file: "main.c",
+        cmd: "zenpad main.c",
+        code: [
+            "#include <stdio.h>",
+            "",
+            "int main() {",
+            "    printf(\"Native Power\\n\");",
+            "    return 0;",
+            "}"
+        ],
+        color: "bg-slate-500"
+    },
+    {
+        lang: "C++",
+        file: "game.cpp",
+        cmd: "zenpad game.cpp",
+        code: [
+            "#include <iostream>",
+            "using namespace std;",
+            "",
+            "int main() {",
+            "    cout << \"No Bloat\" << endl;",
+            "    return 0;",
+            "}"
+        ],
+        color: "bg-blue-600"
+    },
+    {
+        lang: "Java",
+        file: "Main.java",
+        cmd: "zenpad Main.java",
+        code: [
+            "public class Main {",
+            "    public static void main(String[] args) {",
+            "        System.out.println(\"Robust\");",
+            "    }",
+            "}"
+        ],
+        color: "bg-red-500"
+    },
+    {
+        lang: "JavaScript",
+        file: "app.js",
+        cmd: "zenpad app.js",
+        code: [
+            "const zenpad = require('zenpad');",
+            "",
+            "console.log('Versatile');",
+            "const features = ['Fast', 'Minimal'];"
+        ],
+        color: "bg-yellow-400"
+    },
+    {
+        lang: "Ruby",
+        file: "script.rb",
+        cmd: "zenpad script.rb",
+        code: [
+            "puts 'Elegant Syntax'",
+            "zenpad_is_great = true",
+            "if zenpad_is_great",
+            "  puts 'Enjoy Coding'",
+            "end"
+        ],
+        color: "bg-red-600"
+    },
+    {
+        lang: "PHP",
+        file: "index.php",
+        cmd: "zenpad index.php",
+        code: [
+            "<?php",
+            "echo 'Hello World';",
+            "$zenpad = true;",
+            "if ($zenpad) {",
+            "    echo 'Productivity';",
+            "}"
+        ],
+        color: "bg-indigo-500"
+    }
+];
+
 export function Preview() {
-    const [phase, setPhase] = useState<"terminal" | "editor">("terminal");
+    const [snippetIndex, setSnippetIndex] = useState(0);
+    const [phase, setPhase] = useState<"terminal" | "editor" | "reset">("terminal");
     const [typedText, setTypedText] = useState("");
     const [editorLines, setEditorLines] = useState<string[]>([]);
+    const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
 
-    // Typing content
-    const terminalCommand = "zenpad source.py";
-    const editorCode = [
-        "import React from 'react';",
-        "",
-        "function Zenpad() {",
-        "  return 'Simple';",
-        "}"
-    ];
+    const current = snippets[snippetIndex];
 
-    // Stage 1: Type terminal command
+    // Stage 1: Terminal Typing
     useEffect(() => {
         if (phase === "terminal") {
+            setTypedText("");
             let i = 0;
             const interval = setInterval(() => {
-                setTypedText(terminalCommand.slice(0, i + 1));
+                setTypedText(current.cmd.slice(0, i + 1));
                 i++;
-                if (i > terminalCommand.length) {
+                if (i > current.cmd.length + 5) {
                     clearInterval(interval);
-                    setTimeout(() => setPhase("editor"), 800);
+                    setPhase("editor");
                 }
-            }, 100);
+            }, 80);
             return () => clearInterval(interval);
         }
-    }, [phase]);
+    }, [phase, snippetIndex]);
 
-    // Stage 2: Type editor code
+    // Stage 2: Editor Typing
     useEffect(() => {
         if (phase === "editor") {
             let lineIndex = 0;
             let charIndex = 0;
+            setEditorLines([""]);
+            setCursorPos({ line: 1, col: 1 });
 
             const interval = setInterval(() => {
-                if (lineIndex >= editorCode.length) {
+                if (lineIndex >= current.code.length) {
                     clearInterval(interval);
+                    // Wait then cycle
+                    setTimeout(() => {
+                        setPhase("reset");
+                        setTimeout(() => {
+                            setSnippetIndex(prev => (prev + 1) % snippets.length);
+                            setPhase("terminal");
+                        }, 500); // Fade out time
+                    }, 2000); // Read time
                     return;
                 }
 
-                const currentLine = editorCode[lineIndex];
+                const currentLineTarget = current.code[lineIndex];
 
-                if (charIndex <= currentLine.length) {
+                if (charIndex <= currentLineTarget.length) {
                     setEditorLines(prev => {
                         const newLines = [...prev];
-                        newLines[lineIndex] = currentLine.slice(0, charIndex);
+                        newLines[lineIndex] = currentLineTarget.slice(0, charIndex);
                         return newLines;
+                    });
+                    setCursorPos({
+                        line: lineIndex + 1,
+                        col: charIndex + 1
                     });
                     charIndex++;
                 } else {
                     lineIndex++;
                     charIndex = 0;
-                    setEditorLines(prev => [...prev, ""]);
+                    if (lineIndex < current.code.length) {
+                        setEditorLines(prev => [...prev, ""]);
+                        setCursorPos({ line: lineIndex + 1, col: 1 });
+                    }
                 }
-            }, 50);
+            }, 40);
 
             return () => clearInterval(interval);
         }
-    }, [phase]);
+    }, [phase, snippetIndex]);
+
+    // Enhanced Syntax Highlighting
+    const highlightCode = (line: string) => {
+        // Regex for various languages
+        const keywords = /\b(def|return|import|int|void|if|else|echo|using|namespace|class|public|private|function|include|printf|cout|endl|package|func|fmt|fn|let|println|const|require|puts|end|console|var)\b/g;
+        const strings = /(".*?"|'.*?')/g;
+        const numbers = /\b\d+\b/g;
+        const comments = /(\/\/.*|#.*)/g; // Basic comments
+        const directives = /(#include|#define|using namespace)/g;
+
+        // We split by all these tokens to isolate them
+        const tokens = line.split(/(".*?"|'.*?'|\/\/.*|#.*|<\?php|\?>|\b(?:\d+|def|return|import|int|void|if|else|echo|using|namespace|class|public|private|function|include|printf|cout|endl|package|func|fmt|fn|let|println|const|require|puts|end|console|var)\b)/g);
+
+        return tokens.map((part, i) => {
+            if (!part) return null;
+
+            if (part.match(strings)) return <span key={i} className="text-green-600">{part}</span>;
+            if (part.match(comments)) return <span key={i} className="text-gray-400 italic">{part}</span>;
+            if (part.trim() === "<?php" || part.trim() === "?>") return <span key={i} className="text-red-500 font-bold">{part}</span>;
+            if (part.match(directives)) return <span key={i} className="text-purple-600 font-bold">{part}</span>;
+            if (part.match(keywords)) return <span key={i} className="text-purple-600 font-bold">{part}</span>;
+            if (part.match(numbers)) return <span key={i} className="text-blue-500">{part}</span>;
+            if (part.startsWith("$")) return <span key={i} className="text-blue-600">{part}</span>;
+
+            return <span key={i} className="text-[#2e3436]">{part}</span>;
+        });
+    };
 
     return (
         <section className="py-24 overflow-hidden relative min-h-[600px] flex items-center justify-center">
@@ -87,13 +257,15 @@ export function Preview() {
                         backgroundColor: phase === "editor" ? "#fbfbfb" : "#0f0f0f",
                         borderColor: phase === "editor" ? "#d4d4d4" : "rgba(255,255,255,0.1)"
                     }}
-                    transition={{ duration: 2.0, type: "spring", bounce: 0.4 }}
+                    transition={{ duration: 1.5, type: "spring", bounce: 0.2 }}
                     className="mx-auto rounded-xl overflow-hidden flex flex-col relative shadow-2xl"
                 >
                     <AnimatePresence mode="wait">
                         {phase === "terminal" ? (
                             <motion.div
                                 key="terminal-content"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 className="flex flex-col h-full bg-black/90"
                             >
@@ -121,11 +293,12 @@ export function Preview() {
                                     </div>
                                 </div>
                             </motion.div>
-                        ) : (
+                        ) : phase === "editor" ? (
                             <motion.div
                                 key="editor-content"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 transition={{ duration: 0.4 }}
                                 className="flex flex-col h-full font-sans text-sm text-[#2e3436] bg-[#f2f2f2]"
                             >
@@ -169,9 +342,9 @@ export function Preview() {
                                 {/* Tabs */}
                                 <div className="h-8 bg-[#e1e1e1] flex items-end px-1 gap-1 border-b border-[#dadada]">
                                     <div className="bg-[#ffffff] px-3 py-1.5 rounded-t-md text-xs font-medium flex items-center gap-2 border-l border-r border-t border-[#cecece] relative top-px">
-                                        <span>Untitled</span>
+                                        <span>{current.file}</span>
                                         <X className="w-3 h-3 hover:bg-black/10 rounded-full p-0.5 cursor-pointer" />
-                                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+                                        <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${current.color}`} />
                                     </div>
                                     <div className="px-3 py-1.5 text-xs font-medium text-[#5e5c64] hover:bg-[#eaeaea] rounded-t-md cursor-pointer flex items-center gap-2">
                                         <X className="w-3 h-3 opacity-0 group-hover:opacity-100" />
@@ -188,15 +361,15 @@ export function Preview() {
                                     </div>
 
                                     {/* Code Content */}
-                                    <div className="flex-1 p-2 font-mono text-sm overflow-auto">
+                                    <div className="flex-1 p-2 font-mono text-sm overflow-auto text-left">
                                         {editorLines.map((line, i) => (
-                                            <div key={i} className="leading-6 text-[#2e3436 whitespace-pre">
-                                                {line}
+                                            <div key={i} className="leading-6 whitespace-pre relative">
+                                                {highlightCode(line)}
                                                 {i === editorLines.length - 1 && (
                                                     <motion.span
                                                         animate={{ opacity: [1, 0] }}
                                                         transition={{ repeat: Infinity, duration: 0.8 }}
-                                                        className="inline-block w-0.5 h-4 bg-black align-middle ml-0.5"
+                                                        className="absolute inline-block w-0.5 h-4 bg-black align-middle ml-0.5 top-1"
                                                     />
                                                 )}
                                             </div>
@@ -205,11 +378,18 @@ export function Preview() {
                                 </div>
 
                                 {/* Status Bar */}
-                                <div className="h-6 bg-[#f6f5f4] border-t border-[#dadada] flex items-center px-4 text-[11px] text-[#5e5c64]">
-                                    Line {editorLines.length}, Column {editorLines[editorLines.length - 1]?.length || 1}
+                                <div className="h-6 bg-[#f6f5f4] border-t border-[#dadada] flex items-center px-4 text-[11px] text-[#5e5c64] justify-between">
+                                    <span>{current.lang}</span>
+                                    <span>Ln {cursorPos.line}, Col {cursorPos.col}</span>
                                 </div>
 
                             </motion.div>
+                        ) : (
+                            // Reset state (Empty container while switching)
+                            <motion.div
+                                key="reset-content"
+                                className="w-full h-full bg-black/90"
+                            />
                         )}
                     </AnimatePresence>
                 </motion.div>
