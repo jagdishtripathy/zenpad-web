@@ -46,10 +46,10 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-8 bg-gradient-to-b from-black/80 via-black to-black/40 dark:from-white dark:via-white dark:to-white/50 bg-clip-text text-transparent drop-shadow-2xl"
+                    className="relative z-10 text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-8 bg-gradient-to-b from-black/80 via-black to-black/40 dark:from-white dark:via-white dark:to-white/50 bg-clip-text text-transparent drop-shadow-2xl py-2" // Added py-2 to prevent vertical slip
                 >
                     Code with <br className="hidden md:block" />
-                    <span className="bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_auto]">
+                    <span className="bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_auto] pr-2"> {/* Added pr-2 */}
                         Pure Focus
                     </span>
                 </motion.h1>
