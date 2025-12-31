@@ -81,42 +81,52 @@ export function Navbar() {
             {/* Mobile Navigation */}
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden border-b border-white/5 bg-background/95 backdrop-blur-xl overflow-hidden"
-                    >
-                        <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-                            {links.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    to={link.path}
-                                    onClick={() => setIsOpen(false)}
-                                    className={cn(
-                                        "text-base font-medium py-2 transition-colors hover:text-primary block",
-                                        location.pathname === link.path ? "text-primary" : "text-muted-foreground"
-                                    )}
+                    <>
+                        {/* Backdrop to close menu on click outside */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-40 bg-transparent h-screen w-screen"
+                            onClick={() => setIsOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden border-b border-border bg-background/95 backdrop-blur-xl overflow-hidden relative z-50"
+                        >
+                            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
+                                {links.map((link) => (
+                                    <Link
+                                        key={link.name}
+                                        to={link.path}
+                                        onClick={() => setIsOpen(false)}
+                                        className={cn(
+                                            "text-base font-medium py-2 transition-colors hover:text-primary block",
+                                            location.pathname === link.path ? "text-primary" : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {link.name}
+                                    </Link>
+                                ))}
+                                <div className="h-px bg-border my-2" />
+                                <a
+                                    href="https://github.com/jagdishtripathy/zenpad"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
                                 >
-                                    {link.name}
-                                </Link>
-                            ))}
-                            <div className="h-px bg-white/10 my-2" />
-                            <a
-                                href="https://github.com/jagdishtripathy/zenpad"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                            >
-                                <Github className="w-4 h-4" />
-                                <span>GitHub</span>
-                            </a>
-                            <div className="flex items-center justify-between py-2 text-sm font-medium text-muted-foreground">
-                                <span>Theme</span>
-                                <ThemeToggle />
+                                    <Github className="w-4 h-4" />
+                                    <span>GitHub</span>
+                                </a>
+                                <div className="flex items-center justify-between py-2 text-sm font-medium text-muted-foreground">
+                                    <span>Theme</span>
+                                    <ThemeToggle />
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </motion.nav>
